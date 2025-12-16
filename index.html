@@ -396,24 +396,28 @@ button.delete:hover {
 </div>
 
 <script>
+// ------------------ Config ------------------
+const API_BASE = "https://gallery-project-backend-production.up.railway.app";
+
 // ------------------ User Info ------------------
 let token = localStorage.getItem("token");
 let userRole = localStorage.getItem("role");
 let username = localStorage.getItem("username") || "User";
 
-if(!token) window.location.href = "login.html";
+if (!token) window.location.href = "login.html";
 
 document.getElementById("welcomeUser").innerText = `Welcome, ${username}!`;
-document.getElementById("userRoleDisplay").innerText = `Role: ${userRole.charAt(0).toUpperCase() + userRole.slice(1)}`;
+document.getElementById("userRoleDisplay").innerText =
+  `Role: ${userRole.charAt(0).toUpperCase() + userRole.slice(1)}`;
 
 // Show admin cards
-if(userRole === "admin"){
+if (userRole === "admin") {
   document.getElementById("uploadCard").style.display = "block";
   document.getElementById("noteCard").style.display = "block";
 }
 
 // Logout
-document.getElementById("logoutBtn").onclick = ()=>{
+document.getElementById("logoutBtn").onclick = () => {
   localStorage.clear();
   window.location.href = "login.html";
 };
@@ -437,9 +441,12 @@ document.getElementById("locationBtn").addEventListener("click", async () => {
     const lng = position.coords.longitude;
 
     try {
-      const res = await fetch("http://localhost:5000/api/location/save", {
+      const res = await fetch(`${API_BASE}/api/location/save`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
         body: JSON.stringify({ lat, lng })
       });
 
@@ -456,7 +463,7 @@ document.getElementById("locationBtn").addEventListener("click", async () => {
     } finally {
       resetLocationBtn();
     }
-  }, (error) => {
+  }, () => {
     alert("Location access denied");
     resetLocationBtn();
   });
@@ -472,15 +479,17 @@ function resetLocationBtn() {
 // ------------------ Display Locations ------------------
 async function loadLocations() {
   const container = document.getElementById("locationsContainer");
-  container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af;">Loading locations...</div>';
+  container.innerHTML =
+    '<div style="text-align:center;padding:40px;color:#9ca3af;">Loading locations...</div>';
   
   try {
-    const res = await fetch("http://localhost:5000/api/location/all");
+    const res = await fetch(`${API_BASE}/api/location/all`);
     const locations = await res.json();
     
     container.innerHTML = "";
     if (locations.length === 0) {
-      container.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af;">No locations saved yet</div>';
+      container.innerHTML =
+        '<div style="text-align:center;padding:40px;color:#9ca3af;">No locations saved yet</div>';
       return;
     }
     
@@ -497,7 +506,8 @@ async function loadLocations() {
     });
   } catch (err) { 
     console.error("Failed to load locations:", err);
-    container.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">Failed to load locations</div>';
+    container.innerHTML =
+      '<div style="text-align:center;padding:40px;color:#ef4444;">Failed to load locations</div>';
   }
 }
 loadLocations();
@@ -535,10 +545,10 @@ const noteForm = document.getElementById("noteForm");
 
 uploadForm.addEventListener("submit", async e => {
   e.preventDefault();
-  if(!token) return alert("Login as admin to upload");
+  if (!token) return alert("Login as admin to upload");
   
   const fileInput = document.getElementById("file");
-  if(!fileInput.files[0]) return alert("Select a file");
+  if (!fileInput.files[0]) return alert("Select a file");
   
   const submitBtn = uploadForm.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerText;
@@ -549,15 +559,15 @@ uploadForm.addEventListener("submit", async e => {
   formData.append("file", fileInput.files[0]);
   
   try {
-    await fetch("http://localhost:5000/api/media/upload", {
+    await fetch(`${API_BASE}/api/media/upload`, {
       method: "POST", 
-      headers: {Authorization: "Bearer " + token}, 
+      headers: { Authorization: "Bearer " + token }, 
       body: formData
     });
     fileInput.value = "";
     loadMedia();
     alert("Media uploaded successfully!");
-  } catch(err) {
+  } catch (err) {
     console.error(err);
     alert("Upload failed!");
   } finally {
@@ -571,7 +581,7 @@ noteForm.addEventListener("submit", async e => {
   const title = document.getElementById("noteTitle").value;
   const content = document.getElementById("noteContent").value;
   
-  if(!title || !content) return alert("Please fill all fields");
+  if (!title || !content) return alert("Please fill all fields");
   
   const submitBtn = noteForm.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerText;
@@ -579,18 +589,18 @@ noteForm.addEventListener("submit", async e => {
   submitBtn.disabled = true;
   
   try {
-    await fetch("http://localhost:5000/api/notes/create", {
+    await fetch(`${API_BASE}/api/notes/create`, {
       method: "POST", 
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + token
       },
-      body: JSON.stringify({title, content})
+      body: JSON.stringify({ title, content })
     });
     noteForm.reset();
     loadNotes();
     alert("Note added successfully!");
-  } catch(err) {
+  } catch (err) {
     console.error(err);
     alert("Failed to add note!");
   } finally {
@@ -601,15 +611,17 @@ noteForm.addEventListener("submit", async e => {
 
 // ------------------ Load Media ------------------
 async function loadMedia() {
-  gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af;">Loading media...</div>';
+  gallery.innerHTML =
+    '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af;">Loading media...</div>';
   
   try {
-    const res = await fetch("http://localhost:5000/api/media/all");
+    const res = await fetch(`${API_BASE}/api/media/all`);
     const mediaList = await res.json();
     
     gallery.innerHTML = "";
     if (mediaList.length === 0) {
-      gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af;">No media available</div>';
+      gallery.innerHTML =
+        '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af;">No media available</div>';
       return;
     }
     
@@ -625,9 +637,11 @@ async function loadMedia() {
       if (type === "image") {
         card.innerHTML = `<img src="${url}" alt="Media" loading="lazy" />`;
       } else if (type === "video") {
-        card.innerHTML = `<video controls preload="metadata"><source src="${url}" type="video/${url.split('.').pop()}"></video>`;
+        card.innerHTML =
+          `<video controls preload="metadata"><source src="${url}" type="video/${url.split('.').pop()}"></video>`;
       } else {
-        card.innerHTML = `<audio controls preload="metadata"><source src="${url}" type="audio/${url.split('.').pop()}"></audio>`;
+        card.innerHTML =
+          `<audio controls preload="metadata"><source src="${url}" type="audio/${url.split('.').pop()}"></audio>`;
       }
       
       if (userRole === "admin") {
@@ -637,16 +651,16 @@ async function loadMedia() {
         btn.onclick = async () => {
           if (!confirm("Delete this media?")) return;
           try {
-            await fetch("http://localhost:5000/api/media/delete", {
+            await fetch(`${API_BASE}/api/media/delete`, {
               method: "DELETE", 
               headers: {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + token
               }, 
-              body: JSON.stringify({url})
+              body: JSON.stringify({ url })
             });
             loadMedia();
-          } catch(err) {
+          } catch (err) {
             console.error(err);
             alert("Delete failed!");
           }
@@ -655,23 +669,26 @@ async function loadMedia() {
       }
       gallery.appendChild(card);
     });
-  } catch(err) {
+  } catch (err) {
     console.error(err);
-    gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">Failed to load media</div>';
+    gallery.innerHTML =
+      '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">Failed to load media</div>';
   }
 }
 
 // ------------------ Load Notes ------------------
 async function loadNotes() {
-  notesContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af;">Loading notes...</div>';
+  notesContainer.innerHTML =
+    '<div style="text-align:center;padding:40px;color:#9ca3af;">Loading notes...</div>';
   
   try {
-    const res = await fetch("http://localhost:5000/api/notes/all");
+    const res = await fetch(`${API_BASE}/api/notes/all`);
     const notes = await res.json();
     
     notesContainer.innerHTML = "";
     if (notes.length === 0) {
-      notesContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af;">No notes available</div>';
+      notesContainer.innerHTML =
+        '<div style="text-align:center;padding:40px;color:#9ca3af;">No notes available</div>';
       return;
     }
     
@@ -690,12 +707,12 @@ async function loadNotes() {
         btn.onclick = async () => {
           if (!confirm("Delete this note?")) return;
           try {
-            await fetch(`http://localhost:5000/api/notes/delete/${note._id}`, {
+            await fetch(`${API_BASE}/api/notes/delete/${note._id}`, {
               method: "DELETE", 
-              headers: {Authorization: "Bearer " + token}
+              headers: { Authorization: "Bearer " + token }
             });
             loadNotes();
-          } catch(err) {
+          } catch (err) {
             console.error(err);
             alert("Delete failed!");
           }
@@ -704,9 +721,10 @@ async function loadNotes() {
       }
       notesContainer.appendChild(div);
     });
-  } catch(err) {
+  } catch (err) {
     console.error(err);
-    notesContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">Failed to load notes</div>';
+    notesContainer.innerHTML =
+      '<div style="text-align:center;padding:40px;color:#ef4444;">Failed to load notes</div>';
   }
 }
 
